@@ -18,6 +18,25 @@ if TYPE_CHECKING:
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}$")
 
 
+def _normalize_tag_list(raw_tags: Any) -> list[str]:
+    if not isinstance(raw_tags, list):
+        return []
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for tag in raw_tags:
+        if not isinstance(tag, str):
+            continue
+        cleaned = tag.strip()
+        if not cleaned:
+            continue
+        lowered = cleaned.lower()
+        if lowered in seen:
+            continue
+        seen.add(lowered)
+        normalized.append(cleaned)
+    return normalized
+
+
 @register_media_client("jellyfin")
 class JellyfinClient(RestApiMixin):
     """Wrapper around the Jellyfin REST API using credentials from Settings."""
@@ -547,6 +566,7 @@ class JellyfinClient(RestApiMixin):
         try:
             user_id = self.create_user(username, password)
             inv = Invitation.query.filter_by(code=code).first()
+            policy_warning: str | None = None
 
             if inv and inv.libraries:
                 sections = [
@@ -597,6 +617,21 @@ class JellyfinClient(RestApiMixin):
             if max_sessions is not None:
                 current_policy["MaxActiveSessions"] = max_sessions
 
+            selected_template = getattr(inv, "policy_template", None) if inv else None
+            if inv and inv.policy_template_id and not selected_template:
+                policy_warning = "Selected policy template was deleted before redemption."
+                logging.warning(
+                    "JELLYFIN: Invitation %s references missing policy template %s",
+                    inv.code,
+                    inv.policy_template_id,
+                )
+
+            if selected_template:
+                allowed_tags = _normalize_tag_list(selected_template.allowed_tags)
+                blocked_tags = _normalize_tag_list(selected_template.blocked_tags)
+                current_policy["AllowedTags"] = allowed_tags
+                current_policy["BlockedTags"] = blocked_tags
+
             self.set_policy(user_id, current_policy)
 
             from app.services.expiry import calculate_user_expiry
@@ -615,14 +650,41 @@ class JellyfinClient(RestApiMixin):
                     "code": code,
                     "expires": expires,
                     "server_id": server_id,
+                    "notes": policy_warning,
                 }
             )
             db.session.commit()
 
             return True, ""
 
-        except Exception:
+        except Exception as exc:
             logging.error("Jellyfin join error", exc_info=True)
+            if "user_id" in locals() and user_id:
+                logging.error(
+                    "JELLYFIN: Partial success - user '%s' (%s) was created but policy/application flow failed: %s",
+                    username,
+                    user_id,
+                    exc,
+                )
+                try:
+                    db.session.rollback()
+                    existing_partial = User.query.filter_by(
+                        token=user_id, server_id=server_id
+                    ).first()
+                    if not existing_partial:
+                        self._create_user_with_identity_linking(
+                            {
+                                "username": username,
+                                "email": email,
+                                "token": user_id,
+                                "code": code,
+                                "server_id": server_id,
+                                "notes": f"Jellyfin user created, but policy template application failed: {exc}",
+                            }
+                        )
+                        db.session.commit()
+                except Exception:
+                    db.session.rollback()
             db.session.rollback()
             return False, "An unexpected error occurred."
 
