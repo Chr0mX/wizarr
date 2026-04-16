@@ -9,6 +9,7 @@ from sqlalchemy import and_  # type: ignore
 from app.extensions import db
 from app.models import (
     Invitation,
+    JellyfinPolicyTemplate,
     Library,
     MediaServer,
     User,
@@ -99,6 +100,21 @@ def create_invite(form: Any) -> Invitation:
     other_servers = [s for s in servers if s.server_type != "plex"]
     servers = plex_servers + other_servers
 
+    policy_template_id = None
+    raw_policy_template_id = form.get("policy_template_id")
+    if raw_policy_template_id:
+        try:
+            parsed_template_id = int(str(raw_policy_template_id).strip())
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Invalid Jellyfin policy template selection") from exc
+
+        template = db.session.get(JellyfinPolicyTemplate, parsed_template_id)
+        if not template:
+            raise ValueError("Selected Jellyfin policy template no longer exists")
+        if not any(server.server_type == "jellyfin" for server in servers):
+            raise ValueError("Jellyfin policy templates require a Jellyfin server")
+        policy_template_id = parsed_template_id
+
     invite = Invitation(
         code=code,
         used=False,
@@ -132,6 +148,7 @@ def create_invite(form: Any) -> Invitation:
             and str(form.get("max_active_sessions")).strip().isdigit()
             else None
         ),
+        policy_template_id=policy_template_id,
     )
     db.session.add(invite)
     db.session.flush()  # so invite.id exists, but not yet committed
