@@ -146,6 +146,18 @@ class Invitation(db.Model):
     # LDAP integration (2025-12)
     create_ldap_user = db.Column(db.Boolean, default=False, nullable=True)
 
+    # Jellyfin policy template (2026-04)
+    policy_template_id = db.Column(
+        db.Integer,
+        db.ForeignKey("jellyfin_policy_template.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    policy_template = db.relationship(
+        "JellyfinPolicyTemplate",
+        backref=db.backref("invitations", lazy=True),
+        passive_deletes=True,
+    )
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -173,6 +185,25 @@ class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String, unique=True, nullable=False)
     value = db.Column(db.String, nullable=True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class JellyfinPolicyTemplate(db.Model):
+    __tablename__ = "jellyfin_policy_template"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False, unique=True)
+    allowed_tags = db.Column(db.JSON, nullable=False, default=list)
+    blocked_tags = db.Column(db.JSON, nullable=False, default=list)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
