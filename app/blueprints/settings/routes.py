@@ -22,6 +22,7 @@ from ...extensions import db
 from ...forms.general import GeneralSettingsForm
 from ...forms.settings import SettingsForm
 from ...models import Library, MediaServer, Settings
+from ...models import JellyfinPolicyTemplate
 from ...services.servers import (
     check_audiobookshelf,
     check_emby,
@@ -278,6 +279,130 @@ def general_settings():
             "settings/general.html", form=form, app_version=app_version
         )
     return redirect(url_for("settings.page"))
+
+
+def _parse_tags(raw_tags: str) -> list[str]:
+    tags: list[str] = []
+    seen: set[str] = set()
+    for raw in (raw_tags or "").split(","):
+        cleaned = raw.strip()
+        if not cleaned:
+            continue
+        lowered = cleaned.lower()
+        if lowered in seen:
+            continue
+        seen.add(lowered)
+        tags.append(cleaned)
+    return tags
+
+
+def _render_jellyfin_policy_templates(message: str | None = None, level: str = "info"):
+    templates = JellyfinPolicyTemplate.query.order_by(JellyfinPolicyTemplate.name).all()
+    return render_template(
+        "settings/jellyfin_policy_templates.html",
+        templates=templates,
+        message=message,
+        level=level,
+    )
+
+
+@settings_bp.get("/jellyfin/policy-templates")
+@login_required
+def jellyfin_policy_templates():
+    return _render_jellyfin_policy_templates()
+
+
+@settings_bp.post("/jellyfin/policy-templates")
+@login_required
+def create_jellyfin_policy_template():
+    name = (request.form.get("name") or "").strip()
+    allowed_tags = _parse_tags(request.form.get("allowed_tags") or "")
+    blocked_tags = _parse_tags(request.form.get("blocked_tags") or "")
+
+    if not name:
+        return _render_jellyfin_policy_templates(
+            message=_("Template name is required."),
+            level="error",
+        ), 400
+
+    existing = JellyfinPolicyTemplate.query.filter(
+        db.func.lower(JellyfinPolicyTemplate.name) == name.lower()
+    ).first()
+    if existing:
+        return _render_jellyfin_policy_templates(
+            message=_("A policy template with this name already exists."),
+            level="error",
+        ), 400
+
+    template = JellyfinPolicyTemplate(
+        name=name,
+        allowed_tags=allowed_tags,
+        blocked_tags=blocked_tags,
+    )
+    db.session.add(template)
+    db.session.commit()
+    return _render_jellyfin_policy_templates(
+        message=_("Policy template created."),
+        level="success",
+    )
+
+
+@settings_bp.post("/jellyfin/policy-templates/<int:template_id>/update")
+@login_required
+def update_jellyfin_policy_template(template_id: int):
+    template = db.session.get(JellyfinPolicyTemplate, template_id)
+    if not template:
+        return _render_jellyfin_policy_templates(
+            message=_("Policy template not found."),
+            level="error",
+        ), 404
+
+    name = (request.form.get("name") or "").strip()
+    allowed_tags = _parse_tags(request.form.get("allowed_tags") or "")
+    blocked_tags = _parse_tags(request.form.get("blocked_tags") or "")
+
+    if not name:
+        return _render_jellyfin_policy_templates(
+            message=_("Template name is required."),
+            level="error",
+        ), 400
+
+    duplicate = JellyfinPolicyTemplate.query.filter(
+        db.func.lower(JellyfinPolicyTemplate.name) == name.lower(),
+        JellyfinPolicyTemplate.id != template.id,
+    ).first()
+    if duplicate:
+        return _render_jellyfin_policy_templates(
+            message=_("Another template already uses this name."),
+            level="error",
+        ), 400
+
+    template.name = name
+    template.allowed_tags = allowed_tags
+    template.blocked_tags = blocked_tags
+    db.session.commit()
+    return _render_jellyfin_policy_templates(
+        message=_("Policy template updated."),
+        level="success",
+    )
+
+
+@settings_bp.post("/jellyfin/policy-templates/<int:template_id>/delete")
+@login_required
+def delete_jellyfin_policy_template(template_id: int):
+    template = db.session.get(JellyfinPolicyTemplate, template_id)
+    if not template:
+        return _render_jellyfin_policy_templates(
+            message=_("Policy template not found."),
+            level="error",
+        ), 404
+
+    db.session.delete(template)
+    db.session.commit()
+    return _render_jellyfin_policy_templates(
+        message=_("Policy template deleted."),
+        level="success",
+    )
 
 
 @settings_bp.route("/clean-expired-users", methods=["POST"])

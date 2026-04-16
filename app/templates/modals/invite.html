@@ -171,6 +171,23 @@
                 {% endif %}
               </div>
               <!-- Server Selection OUTSIDE advanced -->
+              <div id="policy-template-section" class="space-y-2 mt-4 hidden">
+                <label for="policy_template_id"
+                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">
+                  {{ _("Policy Template") }}
+                </label>
+                <select id="policy_template_id"
+                        name="policy_template_id"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary"
+                        onchange="updatePolicyTemplatePreview()">
+                  <option value="">{{ _("None") }}</option>
+                  {% for template in jellyfin_policy_templates %}
+                    <option value="{{ template.id }}">{{ template.name }}</option>
+                  {% endfor %}
+                </select>
+                <div id="policy-template-preview"
+                     class="hidden text-xs p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300"></div>
+              </div>
               <div class="space-y-2 mt-6">
                 <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ _("Target servers") }}</label>
                 <div id="server-grid" class="flex flex-col space-y-4">
@@ -182,6 +199,7 @@
                              id="srv{{ s.id }}"
                              name="server_ids"
                              value="{{ s.id }}"
+                             data-server-type="{{ s.server_type }}"
                              {% if s.id == chosen_server_id %}checked{% endif %}
                              onchange="updatePrimaryServer(); handleServerToggle(this, {{ s.id }})">
                       <div class="grow">
@@ -445,6 +463,16 @@
   </div>
 </div>
 <script>
+    const jellyfinPolicyTemplates = {
+        {% for template in jellyfin_policy_templates %}
+            "{{ template.id }}": {
+                name: {{ template.name | tojson | safe }},
+                allowedTags: {{ (template.allowed_tags or []) | tojson | safe }},
+                blockedTags: {{ (template.blocked_tags or []) | tojson | safe }},
+            },
+        {% endfor %}
+    };
+
     function copyLink() {
         const copyText = document.getElementById("link");
         copyToClipboard(copyText.value, (success) => {
@@ -476,6 +504,36 @@
                 dropdownContent.innerHTML = {{ _("Loading…") | tojson | safe }};
             }
         }
+        updatePolicyTemplateVisibility();
+    }
+
+    function updatePolicyTemplateVisibility() {
+        const policySection = document.getElementById("policy-template-section");
+        const checkboxes = document.querySelectorAll('#server-grid input[name="server_ids"]');
+        const jellyfinSelected = Array.from(checkboxes).some((checkbox) => checkbox.checked && checkbox.dataset.serverType === "jellyfin");
+
+        if (!policySection) return;
+        policySection.classList.toggle("hidden", !jellyfinSelected);
+
+        const select = document.getElementById("policy_template_id");
+        if (!jellyfinSelected && select) {
+            select.value = "";
+        }
+        updatePolicyTemplatePreview();
+    }
+
+    function updatePolicyTemplatePreview() {
+        const preview = document.getElementById("policy-template-preview");
+        const select = document.getElementById("policy_template_id");
+        if (!preview || !select || !select.value || !jellyfinPolicyTemplates[select.value]) {
+            if (preview) preview.classList.add("hidden");
+            return;
+        }
+        const tpl = jellyfinPolicyTemplates[select.value];
+        const allowed = (tpl.allowedTags || []).length ? tpl.allowedTags.join(", ") : {{ _("None") | tojson | safe }};
+        const blocked = (tpl.blockedTags || []).length ? tpl.blockedTags.join(", ") : {{ _("None") | tojson | safe }};
+        preview.innerHTML = `<div><strong>${tpl.name}</strong></div><div>{{ _("Allowed Tags") }}: ${allowed}</div><div>{{ _("Blocked Tags") }}: ${blocked}</div>`;
+        preview.classList.remove("hidden");
     }
 
     function validateServerSelection() {
@@ -521,6 +579,7 @@
     // Handle successful form submission in modal context
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         if (evt.detail.target.id === 'inviteModalContent') {
+            updatePolicyTemplateVisibility();
             // Check if this is the success view
             const link = document.getElementById('link');
             if (link) {
@@ -537,4 +596,6 @@
             }
         }
     });
+
+    updatePolicyTemplateVisibility();
 </script>
