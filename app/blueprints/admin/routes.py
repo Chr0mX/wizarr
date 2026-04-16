@@ -21,7 +21,6 @@ from app.extensions import db, limiter
 from app.models import (
     Identity,
     Invitation,
-    JellyfinPolicyTemplate,
     LDAPConfiguration,
     Library,
     MediaServer,
@@ -160,9 +159,6 @@ def invite():
         from app.models import WizardBundle
 
         bundles = WizardBundle.query.order_by(WizardBundle.name).all()
-        jellyfin_policy_templates = JellyfinPolicyTemplate.query.order_by(
-            JellyfinPolicyTemplate.name
-        ).all()
 
         try:
             invite = create_invite(request.form)
@@ -178,7 +174,6 @@ def invite():
                 servers=servers,
                 chosen_server_id=target_server.id if target_server else None,
                 bundles=bundles,
-                jellyfin_policy_templates=jellyfin_policy_templates,
                 ldap_enabled=ldap_enabled,
             ), 400
 
@@ -198,7 +193,6 @@ def invite():
             servers=servers,
             chosen_server_id=target_server.id if target_server else None,
             bundles=bundles,
-            jellyfin_policy_templates=jellyfin_policy_templates,
             ldap_enabled=ldap_enabled,
         )
 
@@ -206,9 +200,6 @@ def invite():
     from app.models import WizardBundle
 
     bundles = WizardBundle.query.order_by(WizardBundle.name).all()
-    jellyfin_policy_templates = JellyfinPolicyTemplate.query.order_by(
-        JellyfinPolicyTemplate.name
-    ).all()
     return render_template(
         "modals/invite.html",
         server_type=server_type,
@@ -217,7 +208,6 @@ def invite():
         servers=servers,
         chosen_server_id=target_server.id if target_server else None,
         bundles=bundles,
-        jellyfin_policy_templates=jellyfin_policy_templates,
         ldap_enabled=ldap_enabled,
     )
 
