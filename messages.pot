@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-15 05:32+0000\n"
+"POT-Creation-Date: 2026-04-16 05:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,12 +135,12 @@ msgstr ""
 msgid "An internal error has occurred."
 msgstr ""
 
-#: app/blueprints/admin/routes.py:333
+#: app/blueprints/admin/routes.py:343
 #: app/templates/admin/user_details_modal.html:56
 msgid "Unknown"
 msgstr ""
 
-#: app/blueprints/admin/routes.py:336
+#: app/blueprints/admin/routes.py:346
 #: app/templates/admin/user_details_modal.html:70
 #: app/templates/modals/invite.html:69
 #: app/templates/tables/invite_card.html:115
@@ -149,30 +149,30 @@ msgstr ""
 msgid "Never"
 msgstr ""
 
-#: app/blueprints/admin/routes.py:409 app/templates/tables/invite_card.html:5
+#: app/blueprints/admin/routes.py:419 app/templates/tables/invite_card.html:5
 msgid "Expired"
 msgstr ""
 
-#: app/blueprints/admin/routes.py:417
+#: app/blueprints/admin/routes.py:427
 #, python-format
 msgid "in %(n)d d"
 msgstr ""
 
-#: app/blueprints/admin/routes.py:419
+#: app/blueprints/admin/routes.py:429
 msgid "in 1 d"
 msgstr ""
 
-#: app/blueprints/admin/routes.py:421
+#: app/blueprints/admin/routes.py:431
 #, python-format
 msgid "in %(n)d h"
 msgstr ""
 
-#: app/blueprints/admin/routes.py:423
+#: app/blueprints/admin/routes.py:433
 #, python-format
 msgid "in %(n)d m"
 msgstr ""
 
-#: app/blueprints/admin/routes.py:424
+#: app/blueprints/admin/routes.py:434
 msgid "soon"
 msgstr ""
 
@@ -331,50 +331,78 @@ msgstr ""
 msgid "Library scan failed"
 msgstr ""
 
-#: app/blueprints/settings/routes.py:293
+#: app/blueprints/settings/routes.py:323 app/blueprints/settings/routes.py:365
+msgid "Template name is required."
+msgstr ""
+
+#: app/blueprints/settings/routes.py:332
+msgid "A policy template with this name already exists."
+msgstr ""
+
+#: app/blueprints/settings/routes.py:344
+msgid "Policy template created."
+msgstr ""
+
+#: app/blueprints/settings/routes.py:355 app/blueprints/settings/routes.py:395
+msgid "Policy template not found."
+msgstr ""
+
+#: app/blueprints/settings/routes.py:375
+msgid "Another template already uses this name."
+msgstr ""
+
+#: app/blueprints/settings/routes.py:384
+msgid "Policy template updated."
+msgstr ""
+
+#: app/blueprints/settings/routes.py:402
+msgid "Policy template deleted."
+msgstr ""
+
+#: app/blueprints/settings/routes.py:417
 #, python-brace-format
 msgid "Successfully cleaned {count} expired user(s)."
 msgstr ""
 
-#: app/blueprints/settings/routes.py:298
+#: app/blueprints/settings/routes.py:422
 msgid "No expired users found to clean."
 msgstr ""
 
-#: app/blueprints/settings/routes.py:321 app/blueprints/settings/routes.py:350
+#: app/blueprints/settings/routes.py:445 app/blueprints/settings/routes.py:474
 #: app/templates/settings/general.html:178
 msgid ""
 "Are you sure you want to clean all expired users? This action cannot be "
 "undone."
 msgstr ""
 
-#: app/blueprints/settings/routes.py:323 app/blueprints/settings/routes.py:352
+#: app/blueprints/settings/routes.py:447 app/blueprints/settings/routes.py:476
 #: app/templates/settings/general.html:167
 #: app/templates/settings/general.html:195
 msgid "Clean Expired Users"
 msgstr ""
 
-#: app/blueprints/settings/routes.py:328
+#: app/blueprints/settings/routes.py:452
 #, python-brace-format
 msgid "Failed to clean expired users: {error}"
 msgstr ""
 
-#: app/blueprints/settings/routes.py:407
+#: app/blueprints/settings/routes.py:531
 msgid "LDAP configuration saved successfully"
 msgstr ""
 
-#: app/blueprints/settings/routes.py:481
+#: app/blueprints/settings/routes.py:605
 msgid "LDAP not configured or disabled"
 msgstr ""
 
-#: app/blueprints/settings/routes.py:491
+#: app/blueprints/settings/routes.py:615
 msgid "No groups found in LDAP"
 msgstr ""
 
-#: app/blueprints/settings/routes.py:547
+#: app/blueprints/settings/routes.py:671
 msgid "LDAP is not configured"
 msgstr ""
 
-#: app/blueprints/settings/routes.py:556
+#: app/blueprints/settings/routes.py:680
 #, python-format
 msgid "Failed to list LDAP users: %(error)s"
 msgstr ""
@@ -605,9 +633,9 @@ msgid "Libraries"
 msgstr ""
 
 #: app/forms/settings.py:30 app/forms/settings.py:46
-#: app/templates/admin/user_modal.html:87 app/templates/modals/invite.html:220
-#: app/templates/modals/invite.html:254 app/templates/modals/invite.html:297
-#: app/templates/modals/invite.html:331 app/templates/modals/invite.html:343
+#: app/templates/admin/user_modal.html:87 app/templates/modals/invite.html:239
+#: app/templates/modals/invite.html:273 app/templates/modals/invite.html:316
+#: app/templates/modals/invite.html:350 app/templates/modals/invite.html:362
 msgid "Allow Downloads"
 msgstr ""
 
@@ -917,7 +945,7 @@ msgstr ""
 msgid "Local Account"
 msgstr ""
 
-#: app/templates/login.html:67 app/templates/settings/index.html:125
+#: app/templates/login.html:67 app/templates/settings/index.html:140
 msgid "LDAP"
 msgstr ""
 
@@ -1433,7 +1461,7 @@ msgstr ""
 #: app/templates/components/admin_passkeys.html:61
 #: app/templates/components/admin_passkeys.html:77
 #: app/templates/components/passkey_error.html:19
-#: app/templates/modals/invite.html:437
+#: app/templates/modals/invite.html:456
 #: app/templates/modals/password-reset-link.html:143
 msgid "Close"
 msgstr ""
@@ -1542,6 +1570,7 @@ msgstr ""
 
 #: app/templates/admin/users.html:204 app/templates/servers/index.html:31
 #: app/templates/settings/connections.html:137
+#: app/templates/settings/jellyfin_policy_templates.html:93
 msgid "Delete"
 msgstr ""
 
@@ -1625,7 +1654,7 @@ msgstr ""
 #: app/templates/modals/edit-identity.html:49
 #: app/templates/modals/edit-notification-agent.html:168
 #: app/templates/modals/edit-server.html:178
-#: app/templates/modals/invite.html:388
+#: app/templates/modals/invite.html:407
 #: app/templates/modals/wizard-bundle-form.html:34
 #: app/templates/modals/wizard-import-form.html:102
 #: app/templates/modals/wizard-preset-form.html:59
@@ -1920,6 +1949,7 @@ msgstr ""
 #: app/templates/modals/wizard-bundle-form.html:36
 #: app/templates/modals/wizard-simple-step-form.html:50
 #: app/templates/modals/wizard-step-form.html:141
+#: app/templates/settings/jellyfin_policy_templates.html:85
 #: app/templates/settings/wizard/bundle_form.html:16
 #: app/templates/settings/wizard/form.html:30
 #: app/templates/settings/wizard/simple_form.html:26
@@ -1955,7 +1985,7 @@ msgstr ""
 msgid "Edit Server"
 msgstr ""
 
-#: app/templates/modals/invite.html:14 app/templates/modals/invite.html:383
+#: app/templates/modals/invite.html:14 app/templates/modals/invite.html:402
 msgid "Create Invitation"
 msgstr ""
 
@@ -2042,65 +2072,86 @@ msgstr ""
 msgid "Automatically create an LDAP user when this invitation is accepted"
 msgstr ""
 
-#: app/templates/modals/invite.html:175
+#: app/templates/modals/invite.html:177
+msgid "Policy Template"
+msgstr ""
+
+#: app/templates/modals/invite.html:183 app/templates/modals/invite.html:534
+#: app/templates/modals/invite.html:535
+msgid "None"
+msgstr ""
+
+#: app/templates/modals/invite.html:193
 msgid "Target servers"
 msgstr ""
 
-#: app/templates/modals/invite.html:209
+#: app/templates/modals/invite.html:228
 msgid "Invite to Plex Home"
 msgstr ""
 
-#: app/templates/modals/invite.html:231 app/templates/modals/invite.html:265
-#: app/templates/modals/invite.html:308
+#: app/templates/modals/invite.html:250 app/templates/modals/invite.html:284
+#: app/templates/modals/invite.html:327
 msgid "Allow Live TV Access"
 msgstr ""
 
-#: app/templates/modals/invite.html:242 app/templates/modals/invite.html:319
+#: app/templates/modals/invite.html:261 app/templates/modals/invite.html:338
 msgid "Allow Mobile Uploads"
 msgstr ""
 
-#: app/templates/modals/invite.html:273
+#: app/templates/modals/invite.html:292
 msgid "Max Active Sessions"
 msgstr ""
 
-#: app/templates/modals/invite.html:274
+#: app/templates/modals/invite.html:293
 msgid "simultaneous devices"
 msgstr ""
 
-#: app/templates/modals/invite.html:284
+#: app/templates/modals/invite.html:303
 msgid "Number of devices that can stream simultaneously. Set to 0 for unlimited."
 msgstr ""
 
-#: app/templates/modals/invite.html:359
+#: app/templates/modals/invite.html:378
 msgid "Select Libraries"
 msgstr ""
 
-#: app/templates/modals/invite.html:372 app/templates/modals/invite.html:476
+#: app/templates/modals/invite.html:391 app/templates/modals/invite.html:505
 msgid "Loading…"
 msgstr ""
 
-#: app/templates/modals/invite.html:403
+#: app/templates/modals/invite.html:422
 msgid "Successfully generated an Invitation!"
 msgstr ""
 
-#: app/templates/modals/invite.html:409
+#: app/templates/modals/invite.html:428
 msgid "Invitation Link"
 msgstr ""
 
-#: app/templates/modals/invite.html:421
+#: app/templates/modals/invite.html:440
 #: app/templates/modals/password-reset-link.html:81
 msgid "Copy"
 msgstr ""
 
-#: app/templates/modals/invite.html:426
+#: app/templates/modals/invite.html:445
 msgid "Link has been copied to clipboard!"
 msgstr ""
 
-#: app/templates/modals/invite.html:432
+#: app/templates/modals/invite.html:451
 msgid "Create Another"
 msgstr ""
 
-#: app/templates/modals/invite.html:486
+#: app/templates/modals/invite.html:536
+#: app/templates/settings/jellyfin_policy_templates.html:30
+#: app/templates/settings/jellyfin_policy_templates.html:67
+msgid "Allowed Tags"
+msgstr ""
+
+#: app/templates/modals/invite.html:536
+#: app/templates/settings/jellyfin_policy_templates.html:36
+#: app/templates/settings/jellyfin_policy_templates.html:75
+msgid "Blocked Tags"
+msgstr ""
+
+#: app/templates/modals/invite.html:545
 msgid "Please select at least one server for the invitation."
 msgstr ""
 
@@ -2352,7 +2403,7 @@ msgstr ""
 
 #: app/templates/settings/connections.html:7
 #: app/templates/settings/connections/form.html:37
-#: app/templates/settings/index.html:93
+#: app/templates/settings/index.html:108
 msgid "Connections"
 msgstr ""
 
@@ -2518,20 +2569,54 @@ msgstr ""
 msgid "Servers"
 msgstr ""
 
-#: app/templates/settings/index.html:75
+#: app/templates/settings/index.html:74
+msgid "Jellyfin Policies"
+msgstr ""
+
+#: app/templates/settings/index.html:90
 msgid "Activity"
 msgstr ""
 
-#: app/templates/settings/index.html:108
+#: app/templates/settings/index.html:123
 msgid "Admins"
 msgstr ""
 
-#: app/templates/settings/index.html:141
+#: app/templates/settings/index.html:156
 msgid "Wizard"
 msgstr ""
 
-#: app/templates/settings/index.html:159
+#: app/templates/settings/index.html:174
 msgid "Audit"
+msgstr ""
+
+#: app/templates/settings/jellyfin_policy_templates.html:3
+msgid "Jellyfin Policy Templates"
+msgstr ""
+
+#: app/templates/settings/jellyfin_policy_templates.html:5
+msgid "Create reusable Jellyfin tag policies for invitations."
+msgstr ""
+
+#: app/templates/settings/jellyfin_policy_templates.html:22
+msgid "Create Template"
+msgstr ""
+
+#: app/templates/settings/jellyfin_policy_templates.html:24
+#: app/templates/settings/jellyfin_policy_templates.html:58
+msgid "Template Name"
+msgstr ""
+
+#: app/templates/settings/jellyfin_policy_templates.html:44
+#: app/templates/settings/wizard/_sub_nav.html:95
+msgid "Create"
+msgstr ""
+
+#: app/templates/settings/jellyfin_policy_templates.html:91
+msgid "Delete this template?"
+msgstr ""
+
+#: app/templates/settings/jellyfin_policy_templates.html:100
+msgid "No policy templates configured yet."
 msgstr ""
 
 #: app/templates/settings/ldap.html:8
@@ -2755,10 +2840,6 @@ msgstr ""
 
 #: app/templates/settings/wizard/_sub_nav.html:80
 msgid "Import steps or bundles from JSON file"
-msgstr ""
-
-#: app/templates/settings/wizard/_sub_nav.html:95
-msgid "Create"
 msgstr ""
 
 #: app/templates/settings/wizard/_sub_nav.html:126
