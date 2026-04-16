@@ -142,6 +142,16 @@ class Invitation(db.Model):
 
     # Jellyfin options
     max_active_sessions = db.Column(db.Integer, nullable=True)  # 0 = unlimited/infinity
+    jellyfin_policy_template_id = db.Column(
+        db.Integer,
+        db.ForeignKey("jellyfin_policy_template.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    jellyfin_policy_template = db.relationship(
+        "JellyfinPolicyTemplate",
+        backref=db.backref("invitations", lazy=True),
+        passive_deletes=True,
+    )
 
     # LDAP integration (2025-12)
     create_ldap_user = db.Column(db.Boolean, default=False, nullable=True)
@@ -176,6 +186,53 @@ class Settings(db.Model):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+
+class JellyfinPolicyTemplate(db.Model):
+    __tablename__ = "jellyfin_policy_template"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    allowed_tags = db.Column(db.Text, nullable=True)  # JSON array of strings
+    blocked_tags = db.Column(db.Text, nullable=True)  # JSON array of strings
+    created_at = db.Column(
+        db.DateTime, default=lambda: datetime.now(UTC), nullable=False
+    )
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _get_json_list(self, raw: str | None) -> list[str]:
+        if not raw:
+            return []
+        try:
+            parsed = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            return []
+        if not isinstance(parsed, list):
+            return []
+        return [str(item).strip() for item in parsed if str(item).strip()]
+
+    def _set_json_list(self, value: list[str] | None) -> str:
+        cleaned = [str(item).strip() for item in (value or []) if str(item).strip()]
+        return json.dumps(cleaned)
+
+    def get_allowed_tags(self) -> list[str]:
+        return self._get_json_list(self.allowed_tags)
+
+    def set_allowed_tags(self, tags: list[str] | None) -> None:
+        self.allowed_tags = self._set_json_list(tags)
+
+    def get_blocked_tags(self) -> list[str]:
+        return self._get_json_list(self.blocked_tags)
+
+    def set_blocked_tags(self, tags: list[str] | None) -> None:
+        self.blocked_tags = self._set_json_list(tags)
 
 
 class User(db.Model, UserMixin):
@@ -215,6 +272,8 @@ class User(db.Model, UserMixin):
     created_at = db.Column(
         db.DateTime, default=lambda: datetime.now(UTC), nullable=True
     )
+    policy_template_applied = db.Column(db.Boolean, nullable=True)
+    policy_template_error = db.Column(db.Text, nullable=True)
 
     # Legacy metadata caching fields (will be phased out)
     library_access_json = db.Column(db.Text, nullable=True)
