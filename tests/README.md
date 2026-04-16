@@ -56,6 +56,12 @@ simulate_user_creation_failure(["problematic_username"])
 
 ## Running Tests
 
+### Prerequisites
+```bash
+# Install test dependencies (includes flask-migrate/alembic plugins used by tests)
+uv sync
+```
+
 ### All Tests
 ```bash
 uv run pytest tests/ -v
@@ -77,6 +83,39 @@ uv run pytest tests/e2e/test_invitation_e2e.py -v
 ```bash
 uv run pytest tests/ --cov=app/services/invitation_manager --cov=app/services/invites --cov-report=html
 ```
+
+## Common CI/Test Failures
+
+### `MultipleHeads` Alembic failure during pytest setup
+
+If test setup fails while calling `flask_migrate.upgrade()` with an error like:
+
+```text
+alembic.util.exc.CommandError: Multiple head revisions are present for given argument 'head'
+```
+
+the migrations graph has diverged (more than one `head` revision exists).
+
+#### How to check
+```bash
+uv run python - <<'PY'
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+
+cfg = Config("migrations/alembic.ini")
+cfg.set_main_option("script_location", "migrations")
+print("heads:", ScriptDirectory.from_config(cfg).get_heads())
+PY
+```
+
+#### Expected result
+
+Only one migration head should be returned.  
+For the Jellyfin Policy Template feature, the merge revision is:
+
+- `20260416_merge_policy_template_head`
+
+If you see multiple heads, create/restore a merge migration before re-running tests.
 
 ## Test Scenarios Covered
 
