@@ -8,10 +8,6 @@ from sqlalchemy import or_
 
 from app.extensions import db
 from app.models import Invitation, Library, User
-from app.services.jellyfin_policy_templates import (
-    apply_template_to_policy,
-    log_policy_template_failure,
-)
 from app.services.invites import is_invite_valid
 
 from .client_base import RestApiMixin, register_media_client
@@ -601,31 +597,7 @@ class JellyfinClient(RestApiMixin):
             if max_sessions is not None:
                 current_policy["MaxActiveSessions"] = max_sessions
 
-            template_apply_error = None
-            if inv and getattr(inv, "jellyfin_policy_template", None):
-                try:
-                    current_policy = apply_template_to_policy(
-                        current_policy,
-                        inv.jellyfin_policy_template,
-                    )
-                except Exception as template_exc:
-                    template_apply_error = (
-                        f"Failed to apply template '{inv.jellyfin_policy_template.name}': {template_exc}"
-                    )
-                    log_policy_template_failure(code, username, template_apply_error)
-
-            policy_apply_error = None
-            try:
-                self.set_policy(user_id, current_policy)
-            except Exception as policy_exc:
-                policy_apply_error = f"Jellyfin policy update failed: {policy_exc}"
-                logging.error(
-                    "Policy update failed after Jellyfin user creation (invite=%s username=%s user_id=%s): %s",
-                    code,
-                    username,
-                    user_id,
-                    policy_exc,
-                )
+            self.set_policy(user_id, current_policy)
 
             from app.services.expiry import calculate_user_expiry
 
@@ -645,17 +617,6 @@ class JellyfinClient(RestApiMixin):
                     "server_id": server_id,
                 }
             )
-            created_user = User.query.filter_by(token=user_id, server_id=server_id).first()
-            if created_user:
-                if template_apply_error or policy_apply_error:
-                    created_user.policy_template_applied = False
-                    created_user.policy_template_error = " | ".join(
-                        [x for x in [template_apply_error, policy_apply_error] if x]
-                    )
-                elif inv and getattr(inv, "jellyfin_policy_template", None):
-                    created_user.policy_template_applied = True
-                    created_user.policy_template_error = None
-
             db.session.commit()
 
             return True, ""

@@ -132,12 +132,6 @@ def create_invite(form: Any) -> Invitation:
             and str(form.get("max_active_sessions")).strip().isdigit()
             else None
         ),
-        jellyfin_policy_template_id=(
-            int(form.get("jellyfin_policy_template_id"))
-            if form.get("jellyfin_policy_template_id")
-            and str(form.get("jellyfin_policy_template_id")).strip().isdigit()
-            else None
-        ),
     )
     db.session.add(invite)
     db.session.flush()  # so invite.id exists, but not yet committed
