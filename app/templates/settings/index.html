@@ -61,6 +61,22 @@
           </li>
           <li class="md:me-2">
             <button class="tab-btn w-full inline-flex items-center justify-center px-4 py-3 rounded-lg md:rounded-t-lg md:rounded-b-none bg-gray-700 md:bg-transparent border-0 md:border-b-2 border-transparent text-gray-300 hover:bg-gray-600 md:hover:bg-transparent hover:text-gray-100 md:hover:text-gray-600 md:hover:border-gray-300 md:dark:hover:text-gray-300 dark:bg-gray-800 md:dark:bg-transparent dark:hover:bg-gray-700 md:dark:hover:bg-transparent group transition-colors"
+                    hx-get="{{ url_for('settings.jellyfin_policy_templates') }}"
+                    hx-target="#tab-body"
+                    hx-swap="innerHTML"
+                    hx-trigger="click"
+                    preload="mouseover">
+              <svg class="w-4 h-4 me-2 text-gray-400 transition-colors"
+                   fill="none"
+                   stroke="currentColor"
+                   viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 6h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8a2 2 0 012-2z" />
+              </svg>
+              {{ _("Policy Templates") }}
+            </button>
+          </li>
+          <li class="md:me-2">
+            <button class="tab-btn w-full inline-flex items-center justify-center px-4 py-3 rounded-lg md:rounded-t-lg md:rounded-b-none bg-gray-700 md:bg-transparent border-0 md:border-b-2 border-transparent text-gray-300 hover:bg-gray-600 md:hover:bg-transparent hover:text-gray-100 md:hover:text-gray-600 md:hover:border-gray-300 md:dark:hover:text-gray-300 dark:bg-gray-800 md:dark:bg-transparent dark:hover:bg-gray-700 md:dark:hover:bg-transparent group transition-colors"
                     hx-get="{{ url_for('activity.activity_settings') }}"
                     hx-target="#tab-body"
                     hx-swap="innerHTML"

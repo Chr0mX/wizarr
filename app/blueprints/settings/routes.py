@@ -21,7 +21,13 @@ from app.services.media.service import scan_libraries as scan_media
 from ...extensions import db
 from ...forms.general import GeneralSettingsForm
 from ...forms.settings import SettingsForm
-from ...models import Library, MediaServer, Settings
+from ...models import JellyfinPolicyTemplate, Library, MediaServer, Settings
+from ...services.jellyfin_policy_templates import (
+    create_template,
+    parse_tags,
+    update_template,
+    validate_tags,
+)
 from ...services.servers import (
     check_audiobookshelf,
     check_emby,
@@ -278,6 +284,109 @@ def general_settings():
             "settings/general.html", form=form, app_version=app_version
         )
     return redirect(url_for("settings.page"))
+
+
+@settings_bp.route("/jellyfin-policy-templates", methods=["GET"])
+@login_required
+def jellyfin_policy_templates():
+    templates = JellyfinPolicyTemplate.query.order_by(JellyfinPolicyTemplate.name).all()
+    return render_template("settings/jellyfin_policy_templates.html", templates=templates)
+
+
+@settings_bp.route("/jellyfin-policy-templates/create", methods=["POST"])
+@login_required
+def create_jellyfin_policy_template():
+    name = (request.form.get("name") or "").strip()
+    allowed_tags = parse_tags(request.form.get("allowed_tags"))
+    blocked_tags = parse_tags(request.form.get("blocked_tags"))
+
+    errors = []
+    if not name:
+        errors.append(_("Template name is required."))
+    if JellyfinPolicyTemplate.query.filter(
+        db.func.lower(JellyfinPolicyTemplate.name) == name.lower()
+    ).first():
+        errors.append(_("A template with this name already exists."))
+
+    for err in validate_tags(allowed_tags) + validate_tags(blocked_tags):
+        errors.append(_(err))
+
+    if errors:
+        templates = JellyfinPolicyTemplate.query.order_by(
+            JellyfinPolicyTemplate.name
+        ).all()
+        return (
+            render_template(
+                "settings/jellyfin_policy_templates.html",
+                templates=templates,
+                form_error=" ".join(errors),
+                form_data={
+                    "name": name,
+                    "allowed_tags": ", ".join(allowed_tags),
+                    "blocked_tags": ", ".join(blocked_tags),
+                },
+            ),
+            400,
+        )
+
+    create_template(name, allowed_tags, blocked_tags)
+    templates = JellyfinPolicyTemplate.query.order_by(JellyfinPolicyTemplate.name).all()
+    return render_template("settings/jellyfin_policy_templates.html", templates=templates)
+
+
+@settings_bp.route("/jellyfin-policy-templates/<int:template_id>/update", methods=["POST"])
+@login_required
+def update_jellyfin_policy_template(template_id: int):
+    template = db.session.get(JellyfinPolicyTemplate, template_id)
+    if not template:
+        return ("", 404)
+
+    name = (request.form.get("name") or "").strip()
+    allowed_tags = parse_tags(request.form.get("allowed_tags"))
+    blocked_tags = parse_tags(request.form.get("blocked_tags"))
+
+    errors = []
+    if not name:
+        errors.append(_("Template name is required."))
+
+    duplicate = JellyfinPolicyTemplate.query.filter(
+        db.func.lower(JellyfinPolicyTemplate.name) == name.lower(),
+        JellyfinPolicyTemplate.id != template_id,
+    ).first()
+    if duplicate:
+        errors.append(_("A template with this name already exists."))
+
+    for err in validate_tags(allowed_tags) + validate_tags(blocked_tags):
+        errors.append(_(err))
+
+    if errors:
+        templates = JellyfinPolicyTemplate.query.order_by(
+            JellyfinPolicyTemplate.name
+        ).all()
+        return (
+            render_template(
+                "settings/jellyfin_policy_templates.html",
+                templates=templates,
+                form_error=" ".join(errors),
+            ),
+            400,
+        )
+
+    update_template(template, name, allowed_tags, blocked_tags)
+    templates = JellyfinPolicyTemplate.query.order_by(JellyfinPolicyTemplate.name).all()
+    return render_template("settings/jellyfin_policy_templates.html", templates=templates)
+
+
+@settings_bp.route("/jellyfin-policy-templates/<int:template_id>/delete", methods=["POST"])
+@login_required
+def delete_jellyfin_policy_template(template_id: int):
+    template = db.session.get(JellyfinPolicyTemplate, template_id)
+    if template:
+        db.session.delete(template)
+        db.session.commit()
+
+    templates = JellyfinPolicyTemplate.query.order_by(JellyfinPolicyTemplate.name).all()
+    return render_template("settings/jellyfin_policy_templates.html", templates=templates)
 
 
 @settings_bp.route("/clean-expired-users", methods=["POST"])

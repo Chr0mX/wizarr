@@ -84,6 +84,28 @@
                   </select>
                 </div>
               {% endif %}
+              <div>
+                <label for="jellyfin_policy_template_id"
+                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">
+                  {{ _("Policy Template") }}
+                </label>
+                <select id="jellyfin_policy_template_id"
+                        name="jellyfin_policy_template_id"
+                        onchange="updatePolicyTemplatePreview()"
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary">
+                  <option value="">{{ _("None") }}</option>
+                  {% for template in jellyfin_policy_templates or [] %}
+                    <option value="{{ template.id }}"
+                            data-allowed-tags="{{ template.get_allowed_tags()|join(', ') }}"
+                            data-blocked-tags="{{ template.get_blocked_tags()|join(', ') }}">{{ template.name }}</option>
+                  {% endfor %}
+                </select>
+                <div id="policy-template-preview"
+                     class="hidden mt-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-700 dark:text-gray-200">
+                  <p><span class="font-semibold">{{ _("Allowed Tags") }}:</span> <span id="template-allowed-tags">-</span></p>
+                  <p class="mt-1"><span class="font-semibold">{{ _("Blocked Tags") }}:</span> <span id="template-blocked-tags">-</span></p>
+                </div>
+              </div>
               <!-- Advanced Options Toggle -->
               <div>
                 <a href="#"
@@ -499,6 +521,24 @@
         return true;
     }
 
+    function updatePolicyTemplatePreview() {
+        const select = document.getElementById('jellyfin_policy_template_id');
+        const preview = document.getElementById('policy-template-preview');
+        const allowed = document.getElementById('template-allowed-tags');
+        const blocked = document.getElementById('template-blocked-tags');
+        if (!select || !preview || !allowed || !blocked) return;
+
+        const selected = select.options[select.selectedIndex];
+        if (!selected || !selected.value) {
+            preview.classList.add('hidden');
+            return;
+        }
+
+        allowed.textContent = selected.dataset.allowedTags || '-';
+        blocked.textContent = selected.dataset.blockedTags || '-';
+        preview.classList.remove('hidden');
+    }
+
     function toggleDropdown(id) {
         const el = document.getElementById(id);
         if (el) {
@@ -521,6 +561,7 @@
     // Handle successful form submission in modal context
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         if (evt.detail.target.id === 'inviteModalContent') {
+            updatePolicyTemplatePreview();
             // Check if this is the success view
             const link = document.getElementById('link');
             if (link) {
